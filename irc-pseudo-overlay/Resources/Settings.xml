@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<IrcOverlay>
+  <Form>
+    <DefaultLocation>1515,5</DefaultLocation>
+    <DefaultSize>400,200</DefaultSize>
+  </Form>
+  <Irc>
+    <Server>irc.rizon.net:6667</Server>
+    <Channel>#test.java</Channel>
+    <Nickname>PureOverlay</Nickname>
+    <Username>Pure</Username>
+    <Realname>IRC Overlay</Realname>
+  </Irc>
+</IrcOverlay>
