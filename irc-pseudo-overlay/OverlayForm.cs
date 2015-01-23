@@ -27,7 +27,7 @@ namespace IrcPseudoOverlay
 
         public OverlayForm()
         {
-            // TODO add: settings profiles for games [maybe ui?], ui to change settings, reply in game?, reconnect on dc?
+            // TODO add: settings profiles for games [ui?], ui to change settings, reply in game?, reconnect on dc?
             InitializeComponent();
             Settings.Load("Resources/Settings.xml");
             Size = rtb.Size = Settings.DefaultSize;
@@ -59,15 +59,18 @@ namespace IrcPseudoOverlay
 
         private void MouseListener_MouseMove(object sender, MouseEventArgs e)
         {
+            if (!Settings.HideOnHover)
+                return;
+
             // Hiding overlay if hovering it and permitted to
-            if (Settings.HideOnHover && !_interfaceMode && !_hiddenToHover && Intersecting(e.Location, Location, Size))
+            if (!_hiddenToHover && Visible && !_interfaceMode && Intersecting(e.Location, Location, Size))
             {
                 Hide();
                 _hiddenToHover = true;
             }
 
             // Showing overlay again if not hovering it and permitted to
-            if (Settings.HideOnHover && _hiddenToHover && !Intersecting(e.Location, Location, Size))
+            if (_hiddenToHover && !Intersecting(e.Location, Location, Size))
             {
                 Show();
                 _hiddenToHover = false;
@@ -89,12 +92,14 @@ namespace IrcPseudoOverlay
                     Application.Exit();
                     break;
                 case Keys.F9: // Adjust position
-                    if (_hiddenToHover) return;
+                    if (_hiddenToHover)
+                        break;
                     _interfaceMode = !_interfaceMode;
                     SyncInterfaceState();
                     break;
                 case Keys.F10: // Toggle visibility
-                    if (_hiddenToHover) return;
+                    if (_hiddenToHover)
+                        break;
                     ToggleVisibility();
                     break;
             }
