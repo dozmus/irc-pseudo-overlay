@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace IrcPseudoOverlay
 {
@@ -38,9 +39,9 @@ namespace IrcPseudoOverlay
             _writer.WriteLine("NICK {0}", _creds.Nickname);
         }
 
-        public void SendQuit()
+        public void Quit(string reason="Application exit.")
         {
-            _writer.WriteLine("QUIT :Application exit");
+            _writer.WriteLine("QUIT :{0}", reason);
         }
 
         public void Run()
@@ -49,7 +50,7 @@ namespace IrcPseudoOverlay
             Identify();
 
             // Read loop
-            while (_client.Connected)
+            while (true)
             {
                 try
                 {
@@ -73,6 +74,9 @@ namespace IrcPseudoOverlay
                     // Checking if line is a privmsg
                     string[] frag = line.Split(' ');
 
+                    if (frag.Length < 2)
+                        continue;
+
                     // Joining channels on-connect
                     if (frag[1].Equals("001"))
                     {
@@ -88,30 +92,35 @@ namespace IrcPseudoOverlay
                     
                     // Parsing
                     string ident = frag[0];
-                    string nick = ident.IndexOf('!') > -1 ? ident.Split('!')[0] : null;
-                    // string chan = frag[2];
-                    string msg = line.Substring(line.IndexOf(':') + 1);
+                    string nick = ident.IndexOf('!') != -1 ? ident.Split('!')[0] : null;
+
+                    if (nick == null)
+                        continue;
 
                     // Reading join/part/quit
                     if (!nick.Equals(Settings.Credentials.Nickname))
                     {
-                        if (frag[1].Equals("JOIN"))
+                        string msg = line.Substring(line.IndexOf(':') + 1);
+
+                        switch (frag[1])
                         {
-                            _form.AppendLine("* " + nick + " has joined");
-                        }
-                        else if (frag[1].Equals("PART"))
-                        {
-                            _form.AppendLine("* " + nick + " has left (" + msg + ")");
-                        }
-                        else if (frag[1].Equals("QUIT"))
-                        {
-                            _form.AppendLine("* " + nick + " has quit (" + msg + ")");
+                            case "JOIN":
+                                _form.AppendLine("* " + nick + " has joined");
+                                break;
+                            case "PART":
+                                _form.AppendLine("* " + nick + " has left (" + msg + ")");
+                                break;
+                            case "QUIT":
+                                _form.AppendLine("* " + nick + " has quit (" + msg + ")");
+                                break;
                         }
                     }
 
                     // Reading privmsg
                     if (frag[1].Equals("PRIVMSG"))
                     {
+                        string msg = line.Substring(line.IndexOf(':') + 1);
+
                         // Displaying received text
                         if (msg.IndexOf(Settings.Credentials.Nickname, StringComparison.OrdinalIgnoreCase) != -1)
                         {
@@ -123,8 +132,9 @@ namespace IrcPseudoOverlay
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    Debug.WriteLine("[Exception:IrcListener#Run]: " + e.Message + "\r\n" + e.StackTrace);
                 }
             }
         }
