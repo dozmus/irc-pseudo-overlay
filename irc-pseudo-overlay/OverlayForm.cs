@@ -10,6 +10,7 @@ namespace IrcPseudoOverlay
     public partial class OverlayForm : Form
     {
         private delegate void AppendLineCallback(string message, string nickname = "");
+        private delegate void AppendHighlightLineCallback(string message, string nickname, Color color);
         private readonly IrcListener _listener;
         private bool _interfaceMode;
         private bool _hiddenToHover;
@@ -34,17 +35,13 @@ namespace IrcPseudoOverlay
             DesktopLocation = Settings.DefaultLocation;
 
             // Keyboard hook
-            var keyListener = new KeyboardHookListener(new GlobalHooker())
-            {
-                Enabled = true
-            };
+            var keyListener = new KeyboardHookListener(new GlobalHooker());
+            keyListener.Start();
             keyListener.KeyUp += KeyListener_KeyUp;
 
             // Mouse hook
-            var mouseListener = new MouseHookListener(new GlobalHooker())
-            {
-                Enabled = true
-            };
+            var mouseListener = new MouseHookListener(new GlobalHooker());
+            mouseListener.Start();
             mouseListener.MouseMove += MouseListener_MouseMove;
 
             // Starting irc listener
@@ -116,6 +113,28 @@ namespace IrcPseudoOverlay
                 rtb.AppendText(nickname.Length == 0
                     ? String.Format("{0}{1}", message, Environment.NewLine)
                     : String.Format("<{0}> {1}{2}", nickname, message, Environment.NewLine));
+            }
+        }
+
+        public void AppendHighlightLine(string message, string nickname, Color color)
+        {
+            if (rtb.InvokeRequired)
+            {
+                Invoke(new AppendHighlightLineCallback(AppendHighlightLine), new object[] { message, nickname, color });
+            }
+            else
+            {
+                int startIndex = rtb.Text.Length;
+                string line = String.Format("<{0}> {1}{2}", nickname, message, Environment.NewLine);
+                rtb.AppendText(line);
+
+                // Highlighting the line
+                rtb.Select(startIndex, line.Length);
+                rtb.SelectionColor = color;
+
+                // Scrolling down
+                rtb.SelectionStart = rtb.Text.Length;
+                rtb.ScrollToCaret();
             }
         }
 

@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 
@@ -83,18 +85,42 @@ namespace IrcPseudoOverlay
                         string channel = frag[3];
                         _form.AppendLine("Now talking on " + channel);
                     }
+                    
+                    // Parsing
+                    string ident = frag[0];
+                    string nick = ident.IndexOf('!') > -1 ? ident.Split('!')[0] : null;
+                    // string chan = frag[2];
+                    string msg = line.Substring(line.IndexOf(':') + 1);
+
+                    // Reading join/part/quit
+                    if (!nick.Equals(Settings.Credentials.Nickname))
+                    {
+                        if (frag[1].Equals("JOIN"))
+                        {
+                            _form.AppendLine("* " + nick + " has joined");
+                        }
+                        else if (frag[1].Equals("PART"))
+                        {
+                            _form.AppendLine("* " + nick + " has left (" + msg + ")");
+                        }
+                        else if (frag[1].Equals("QUIT"))
+                        {
+                            _form.AppendLine("* " + nick + " has quit (" + msg + ")");
+                        }
+                    }
 
                     // Reading privmsg
                     if (frag[1].Equals("PRIVMSG"))
                     {
-                        // Parsing input
-                        string ident = frag[0];
-                        // string chan = frag[2];
-                        string msg = line.Substring(line.IndexOf(':') + 1);
-                        string nick = ident.Split('!')[0];
-
-                        // Displaying
-                        _form.AppendLine(msg, nick);
+                        // Displaying received text
+                        if (msg.IndexOf(Settings.Credentials.Nickname, StringComparison.OrdinalIgnoreCase) != -1)
+                        {
+                            _form.AppendHighlightLine(msg, nick, Color.LightGoldenrodYellow);
+                        }
+                        else
+                        {
+                            _form.AppendLine(msg, nick);
+                        }
                     }
                 }
                 catch
