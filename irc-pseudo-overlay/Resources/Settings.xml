@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <IrcOverlay>
   <Form>
-    <DefaultLocation>1515,5</DefaultLocation>
+    <DefaultLocation>50,50</DefaultLocation>
     <DefaultSize>400,200</DefaultSize>
-    <HideOnHover>true</HideOnHover>
+    <HideOnHover>false</HideOnHover>
   </Form>
   <Irc>
     <Server>irc.rizon.net:6667</Server>
