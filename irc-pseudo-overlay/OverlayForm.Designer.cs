@@ -1,4 +1,4 @@
-﻿namespace irc_pseudo_overlay
+﻿namespace IrcPseudoOverlay
 {
     partial class OverlayForm
     {
@@ -74,4 +74,3 @@
 
     }
 }
-

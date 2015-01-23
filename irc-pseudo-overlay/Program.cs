@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace irc_pseudo_overlay
+namespace IrcPseudoOverlay
 {
     static class Program
     {

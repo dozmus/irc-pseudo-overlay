@@ -12,6 +12,8 @@ A simple windows form application that acts as an IRC overlay (to be used with
 ------------------
 ### Features
 * Single IRC channel connection (settings file)
+* Hide on hover (Settings file, value 'HideOnHover')
+* Manual show/hide (Key: F10 to toggle)
 * Can move around/resize (Key: F9 to toggle this mode, or use the settings file)
 * Shutdown (Key: F8)
 

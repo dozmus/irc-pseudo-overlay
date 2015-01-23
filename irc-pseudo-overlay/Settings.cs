@@ -1,13 +1,14 @@
 ﻿using System.Drawing;
 using System.Xml;
 
-namespace irc_pseudo_overlay
+namespace IrcPseudoOverlay
 {
     class Settings
     {
         #region Form Variables
         public static Point DefaultLocation { get; set; }
         public static Size DefaultSize { get; set; }
+        public static bool HideOnHover { get; set; }
         #endregion
 
         #region IRC Variables
@@ -44,6 +45,10 @@ namespace irc_pseudo_overlay
                 reader.ReadToFollowing("DefaultSize");
                 string[] defSize = reader.ReadElementContentAsString().Split(',');
                 DefaultSize = new Size(int.Parse(defSize[0]), int.Parse(defSize[1]));
+
+                // Reading HideOnHover
+                reader.ReadToFollowing("HideOnHover");
+                HideOnHover = reader.ReadElementContentAsBoolean();
                 #endregion
 
                 #region IRC Variables

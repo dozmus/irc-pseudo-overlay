@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 
-namespace irc_pseudo_overlay
+namespace IrcPseudoOverlay
 {
     class IrcListener
     {
@@ -34,6 +34,11 @@ namespace irc_pseudo_overlay
         {
             _writer.WriteLine("USER {0} 8 * :{1}", _creds.Username, _creds.Realname);
             _writer.WriteLine("NICK {0}", _creds.Nickname);
+        }
+
+        public void SendQuit()
+        {
+            _writer.WriteLine("QUIT :Application exit");
         }
 
         public void Run()
