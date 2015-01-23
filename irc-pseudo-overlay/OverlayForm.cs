@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
@@ -12,6 +13,8 @@ namespace IrcPseudoOverlay
         private delegate void AppendLineCallback(string message, string nickname = "");
         private delegate void AppendHighlightLineCallback(string message, string nickname, Color color);
         private readonly IrcListener _listener;
+        private KeyboardHookListener _keyListener;
+        private MouseHookListener _mouseListener;
         private bool _interfaceMode;
         private bool _hiddenToHover;
 
@@ -33,25 +36,30 @@ namespace IrcPseudoOverlay
             Settings.Load("Resources/Settings.xml");
             Size = rtb.Size = Settings.DefaultSize;
             DesktopLocation = Settings.DefaultLocation;
-
-            // Keyboard hook
-            var keyListener = new KeyboardHookListener(new GlobalHooker());
-            keyListener.Start();
-            keyListener.KeyUp += KeyListener_KeyUp;
-
-            // Mouse hook
-            var mouseListener = new MouseHookListener(new GlobalHooker());
-            mouseListener.Start();
-            mouseListener.MouseMove += MouseListener_MouseMove;
+            BindHooks();
 
             // Starting irc listener
             _listener = new IrcListener(this, Settings.Credentials, Settings.Server, Settings.Channel);
 
             var ircListenerThread = new Thread(_listener.Run)
             {
+                Name = "irc_listener",
                 IsBackground = true
             };
             ircListenerThread.Start();
+        }
+
+        private void BindHooks()
+        {
+            // Keyboard hook
+            _keyListener = new KeyboardHookListener(new GlobalHooker());
+            _keyListener.Start();
+            _keyListener.KeyUp += KeyListener_KeyUp;
+
+            // Mouse hook
+            _mouseListener = new MouseHookListener(new GlobalHooker());
+            _mouseListener.Start();
+            _mouseListener.MouseMove += MouseListener_MouseMove;
         }
 
         private void MouseListener_MouseMove(object sender, MouseEventArgs e)
@@ -82,10 +90,12 @@ namespace IrcPseudoOverlay
 
         private void KeyListener_KeyUp(object sender, KeyEventArgs e)
         {
+            Debug.WriteLine("key_up:" + e.KeyCode);
+
             switch (e.KeyCode)
             {
                 case Keys.F8: // Shut down
-                    _listener.SendQuit();
+                    _listener.Quit();
                     Application.Exit();
                     break;
                 case Keys.F9: // Adjust position
