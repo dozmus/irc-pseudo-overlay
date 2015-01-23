@@ -7,7 +7,7 @@
     <ProjectGuid>{A7658903-3B46-42DC-BE11-AC13614D84B8}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>irc_pseudo_overlay</RootNamespace>
+    <RootNamespace>IrcPseudoOverlay</RootNamespace>
     <AssemblyName>irc-pseudo-overlay</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

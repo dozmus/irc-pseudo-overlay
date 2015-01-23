@@ -5,12 +5,14 @@ using System.Windows.Forms;
 using MouseKeyboardActivityMonitor;
 using MouseKeyboardActivityMonitor.WinApi;
 
-namespace irc_pseudo_overlay
+namespace IrcPseudoOverlay
 {
     public partial class OverlayForm : Form
     {
         private delegate void AppendLineCallback(string message, string nickname = "");
-        private bool _adjustMode;
+        private readonly IrcListener _listener;
+        private bool _interfaceMode;
+        private bool _hiddenToHover;
 
         protected override CreateParams CreateParams
         {
@@ -38,14 +40,44 @@ namespace irc_pseudo_overlay
             };
             keyListener.KeyUp += KeyListener_KeyUp;
 
-            // Starting irc listener
-            var listener = new IrcListener(this, Settings.Credentials, Settings.Server, Settings.Channel);
+            // Mouse hook
+            var mouseListener = new MouseHookListener(new GlobalHooker())
+            {
+                Enabled = true
+            };
+            mouseListener.MouseMove += MouseListener_MouseMove;
 
-            var ircListenerThread = new Thread(listener.Run)
+            // Starting irc listener
+            _listener = new IrcListener(this, Settings.Credentials, Settings.Server, Settings.Channel);
+
+            var ircListenerThread = new Thread(_listener.Run)
             {
                 IsBackground = true
             };
             ircListenerThread.Start();
+        }
+
+        private void MouseListener_MouseMove(object sender, MouseEventArgs e)
+        {
+            // Hiding overlay if hovering it and permitted to
+            if (Settings.HideOnHover && !_interfaceMode && !_hiddenToHover && Intersecting(e.Location, Location, Size))
+            {
+                Hide();
+                _hiddenToHover = true;
+            }
+
+            // Showing overlay again if not hovering it and permitted to
+            if (Settings.HideOnHover && _hiddenToHover && !Intersecting(e.Location, Location, Size))
+            {
+                Show();
+                _hiddenToHover = false;
+            }
+        }
+
+        private static bool Intersecting(Point point, Point source, Size size)
+        {
+            return point.X > source.X && point.Y > source.Y
+                   && point.X < source.X + size.Width && point.Y < source.Y + size.Height;
         }
 
         private void KeyListener_KeyUp(object sender, KeyEventArgs e)
@@ -53,11 +85,17 @@ namespace irc_pseudo_overlay
             switch (e.KeyCode)
             {
                 case Keys.F8: // Shut down
+                    _listener.SendQuit();
                     Application.Exit();
                     break;
                 case Keys.F9: // Adjust position
-                    _adjustMode = !_adjustMode;
-                    SyncMode();
+                    if (_hiddenToHover) return;
+                    _interfaceMode = !_interfaceMode;
+                    SyncInterfaceState();
+                    break;
+                case Keys.F10: // Toggle visibility
+                    if (_hiddenToHover) return;
+                    ToggleVisibility();
                     break;
             }
         }
@@ -82,32 +120,34 @@ namespace irc_pseudo_overlay
             rtb.ScrollToCaret();
         }
 
-        private void SyncMode()
+        private void SyncInterfaceState()
         {
-            if (_adjustMode)
+            if (_interfaceMode) // Forefront
             {
-                ForefrontMode();
+                BackColor = Color.Azure;
+                rtb.BackColor = Color.Azure;
+                rtb.ForeColor = Color.DarkSlateGray;
+                FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            }
+            else // Background
+            {
+                BackColor = Color.Black;
+                rtb.BackColor = Color.Black;
+                rtb.ForeColor = Color.Azure;
+                FormBorderStyle = FormBorderStyle.None;
+            }
+        }
+
+        private void ToggleVisibility()
+        {
+            if (Visible)
+            {
+                Hide();
             }
             else
             {
-                BackgroundMode();
+                Show();
             }
-        }
-
-        private void ForefrontMode()
-        {
-            BackColor = Color.Azure;
-            rtb.BackColor = Color.Azure;
-            rtb.ForeColor = Color.DarkSlateGray;
-            FormBorderStyle = FormBorderStyle.SizableToolWindow;
-        }
-
-        private void BackgroundMode()
-        {
-            BackColor = Color.Black;
-            rtb.BackColor = Color.Black;
-            rtb.ForeColor = Color.Azure;
-            FormBorderStyle = FormBorderStyle.None;
         }
     }
 }
