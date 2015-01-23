@@ -3,7 +3,7 @@
   <Form>
     <DefaultLocation>1515,5</DefaultLocation>
     <DefaultSize>400,200</DefaultSize>
-    <HideOnHover>false</HideOnHover>
+    <HideOnHover>true</HideOnHover>
   </Form>
   <Irc>
     <Server>irc.rizon.net:6667</Server>
