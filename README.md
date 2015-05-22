@@ -13,13 +13,13 @@ A simple windows form application that acts as an IRC overlay (to be used with
 * Single IRC server and channel connection (settings file)
 * Hide on hover (Settings file, value 'HideOnHover')
 * Manual show/hide (Key: F10 to toggle)
-* Can move around/resize (Key: F9 to toggle this mode, or use the settings file)
+* Move around/Resize (Key: F9 to toggle this mode, or edit via the settings file)
 * Shutdown (Key: F8)
 * Highlights [your] nickname mentions
 * Displays join/part/quit messages
 
 ------------------
-### Requirements (to compile)
+### Requirements
 * .NET Framework 4.0
 * MouseKeyboardActivityMonitor v4a2
 
